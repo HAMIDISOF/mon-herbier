@@ -1,0 +1,105 @@
+— MODÈLE DE FICHE WORD STRUCTURÉE — Mon Herbier
+================================================
+Copie ce modèle dans un fichier .docx, remplace les valeurs
+et dépose le fichier dans le dossier fiches/ pour l'importer.
+
+Chaque champ est sur sa propre ligne, format : Label: Valeur
+Les champs multilignes se terminent quand un nouveau label est reconnu.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXEMPLE — PLANTE BRUTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Nom commun: Ortie
+Nom scientifique: Urtica dioica
+Type: plante brute
+Famille botanique: Urticacées
+Biologique: oui
+Partie utilisée: Feuilles
+Origine: France
+Mode de préparation: Infusion
+Température: 90°C
+Temps d'infusion: 7 à 10 min
+Posologie: 2 à 3 tasses par jour
+Conditionnement: Vrac 100g
+Propriétés: Diurétique, reminéralisant, riche en fer et silice.
+Excellent pour les articulations et la vitalité.
+Contre-indications: Déconseillé en cas de problèmes rénaux graves.
+Interactions médicamenteuses: Peut potentialiser les anticoagulants.
+Précautions: Consulter un médecin si traitement en cours.
+Distributeur: Sana Gaïa
+Prix: 8,50 €
+Quantité en stock: 80g
+Lieu de stockage: Étagère cuisine — bocal hermétique
+Liens ressources: Doctissimo: https://www.doctissimo.fr/...
+Notes: Très efficace en cure de printemps.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXEMPLE — COMPLÉMENT ALIMENTAIRE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Nom commun: Shilajit Premium
+Nom scientifique: Asphaltum punjabianum
+Type: complément
+Biologique: non
+Partie utilisée: Résine
+Origine: Tibet
+Référence produit: SHA-001
+Forme: Gélules
+Dosage: 500 mg
+Posologie: 1 gélule par jour
+Moment de prise: Matin au repas
+Durée de cure: 3 mois
+Conditionnement: Flacon 90 gélules
+Propriétés: Adaptogène, riche en acide fulvique. Énergie, immunité.
+Contre-indications: Grossesse, allaitement.
+Interactions médicamenteuses: Aucune connue à ce jour.
+Distributeur: Onatera
+Prix: 19,90 €
+Quantité en stock: 90 gélules
+Lieu de stockage: Placard salle de bain
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXEMPLE — HUILE ESSENTIELLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Nom commun: Ravintsara
+Nom scientifique: Cinnamomum camphora CT cinéole
+Type: huile essentielle
+Famille botanique: Lauracées
+Biologique: oui
+Organe distillé: Feuilles
+Origine: Madagascar
+Mode d'obtention: Distillation à la vapeur d'eau
+Chémotype: 1,8-cinéole, α-terpinéol
+Composition: Eucalyptol 50-72%, α-terpinéol 4-11%, Sabinène 7-18%
+Voies d'utilisation: Cutanée : principale (diluée 20%)
+Diffusion : principale
+Orale : secondaire sur avis professionnel
+Précautions par voie: Voie cutanée : diluer dans HV avant application.
+Voie orale : 1 goutte max sur du miel, 3x/jour.
+Date limite: 28/05/2028
+Propriétés: Antiviral puissant, immunostimulant, expectorant.
+Contre-indications: Femmes enceintes (1er trimestre), nourrissons < 3 mois.
+Interactions médicamenteuses: Aucune connue.
+Distributeur: Onatera
+Prix: 12,50 €
+Quantité en stock: 10 ml
+Lieu de stockage: Placard salle de bain — à l'abri de la lumière
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXEMPLE — PLANTE DE JARDIN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Nom commun: Lavande vraie
+Nom scientifique: Lavandula angustifolia
+Type: plante jardin
+Famille botanique: Lamiacées
+Biologique: oui
+Partie: Fleurs
+Emplacement: Massif est
+Exposition: Plein soleil
+Type de sol: Calcaire, bien drainé
+Période de semis: mars-avril (intérieur)
+Période de récolte: juin-juillet (avant ouverture complète)
+Vivace: oui
+Hivernage: Rustique, pas d'hivernage nécessaire
+Entretien: Taille après floraison. Arrosage modéré.
+Propriétés: Calmante, cicatrisante, antiseptique. Distillation possible.
+Notes: Récolter le matin par temps sec.

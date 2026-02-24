@@ -1,0 +1,20 @@
+# Base de données SQLite (locale, ne pas versionner)
+herbier.db
+
+# Données JSON de migration (archive locale)
+herbier_data.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Fiches personnelles (optionnel — décommenter si tu ne veux pas versionner tes fiches)
+# fiches/*.docx
