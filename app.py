@@ -260,6 +260,47 @@ def api_plantes():
 if __name__ == "__main__":
     init_db()
     print("🌿 Mon Herbier — http://localhost:5000")
+    print("   Ctrl+C pour quitter")
     import threading, webbrowser
     threading.Timer(1.2, lambda: webbrowser.open("http://localhost:5000")).start()
-    app.run(debug=True, port=5000)
+    try:
+        app.run(debug=True, port=5000)
+    except KeyboardInterrupt:
+        print("\n🌿 Au revoir !")
+
+# ══════════════════════════════════════════════════════════════════════════════
+# QUITTER
+# ══════════════════════════════════════════════════════════════════════════════
+
+@app.route("/quitter", methods=["POST"])
+def quitter():
+    import threading, os, signal, time
+
+    def _arreter():
+        time.sleep(1)
+        os.kill(os.getpid(), signal.SIGTERM)
+
+    threading.Thread(target=_arreter, daemon=True).start()
+
+    return """<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Au revoir</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    body { font-family:'Cormorant Garamond',serif; background:#f4efe6;
+           display:flex; align-items:center; justify-content:center;
+           height:100vh; margin:0; color:#2a2018; }
+    h1 { font-size:2rem; font-weight:300; margin-bottom:.5rem; }
+    p  { color:#7a6d58; }
+  </style>
+</head>
+<body>
+  <div style="text-align:center">
+    <h1>🌿 À bientôt !</h1>
+    <p>Mon Herbier s'est arrêté. Cette fenêtre va se fermer…</p>
+  </div>
+  <script>setTimeout(() => window.close(), 1200);</script>
+</body>
+</html>"""

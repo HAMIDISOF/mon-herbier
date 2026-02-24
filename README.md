@@ -1,4 +1,4 @@
-# 🌿 Mon Herbier — v3.0
+# 🌿 Mon Herbier — v3.1
 
 Application de gestion de plantes médicinales, compléments alimentaires et huiles essentielles.
 **Stack** : Python · Flask · SQLite · HTML/JS
@@ -15,11 +15,11 @@ Herbier_app/
 ├── extract_fiches.py   ← Extraction automatique des fiches .docx
 ├── migrate.py          ← Migration depuis l'ancien herbier_data.json
 ├── requirements.txt    ← Dépendances Python
-├── herbier.db          ← Base SQLite (créée au 1er lancement)
+├── herbier.db          ← Base SQLite (créée au 1er lancement, non versionnée)
 ├── fiches/             ← Dossier de dépôt des fiches .docx à importer
-│   └── MODELE_FICHE.txt ← Modèles de fiches pour chaque type
+│   └── MODELE_FICHE.txt ← Modèles de fiches pour les 4 types
 └── templates/
-    ├── base.html       ← Navigation, thème, flashs
+    ├── base.html       ← Navigation, thème, flashs, bouton Quitter
     ├── index.html      ← Liste + recherche + filtres
     ├── detail.html     ← Fiche détail + journal de cure
     ├── formulaire.html ← Ajout / modification
@@ -31,42 +31,45 @@ Herbier_app/
 ## 🚀 Installation & lancement
 
 ```bash
-# 1. Installer les dépendances
+# 1. Installer les dépendances (une seule fois)
 pip install -r requirements.txt
 
 # 2. Lancer l'application
 python app.py
-
-# 3. Ouvrir dans le navigateur
-# → http://localhost:5000
+# → Le navigateur s'ouvre automatiquement sur http://localhost:5000
 ```
+
+Pour quitter : bouton **"✕ Quitter"** dans la navigation, ou **Ctrl+C** dans le terminal.
 
 ---
 
-## 🔄 Migration depuis l'ancienne version
+## 🔄 Migration depuis l'ancienne version (Tkinter / JSON)
 
-Si tu as un fichier `herbier_data.json` (ancienne version Tkinter) :
+Si tu as un fichier `herbier_data.json` issu de l'ancienne version Tkinter :
 
 ```bash
-# Place herbier_data.json dans le dossier Herbier_app/
+# 1. Place herbier_data.json dans le dossier Herbier_app/
+# 2. Lance la migration (une seule fois)
 python migrate.py
 ```
 
-Le script détecte automatiquement les types, migre tous les champs et conserve les liens vers les fiches Word.
+Le script détecte automatiquement les types, migre `maladies` → `proprietes`, conserve les liens Word locaux, et ne modifie pas le JSON original.
 
 ---
 
 ## 📂 Importer des fiches Word
 
-1. Crée tes fiches `.docx` en suivant le format du fichier `fiches/MODELE_FICHE.txt`
+1. Crée tes fiches `.docx` selon le format `fiches/MODELE_FICHE.txt`
 2. Dépose-les dans le dossier `fiches/`
-3. Clique sur **"📂 Importer fiches"** dans la barre de navigation
+3. Clique sur **"📂 Importer fiches"** dans la navigation
 
-Structure minimale d'une fiche :
+Structure minimale :
 ```
 Nom commun: Ortie
 Type: plante brute
 ```
+
+Labels insensibles à la casse. Champs inconnus ignorés silencieusement.
 
 ---
 
@@ -84,10 +87,11 @@ Plante (base)
 
 ### Base de données (`database.py`)
 
-Architecture en tables séparées :
-- `plantes` — champs communs à tous les types
+- `plantes` — champs communs
 - `plantes_brutes` / `complements` / `huiles_essentielles` / `plantes_jardin` — champs spécifiques
-- `journal` — entrées du journal de cure (liées par `plante_id`)
+- `journal` — journal de cure (lié par `plante_id`)
+
+> ⚠️ `CHAMPS_SPECIFIQUES` est dans `database.py`, pas dans `models.py`
 
 ### Routes Flask (`app.py`)
 
@@ -101,38 +105,54 @@ Architecture en tables séparées :
 | POST | `/plante/<id>/supprimer` | Supprime une plante |
 | GET | `/journal` | Journal global |
 | POST | `/journal/ajouter` | Ajoute une entrée journal |
+| POST | `/journal/<id>/supprimer` | Supprime une entrée journal |
 | POST | `/importer` | Import fiches .docx |
+| POST | `/quitter` | Arrête Flask + ferme l'onglet |
 | GET | `/api/plantes` | API JSON |
 
 ---
 
-## ➕ Ajouter un nouveau type de plante
+## ⚠️ Points d'attention connus
 
-**Étape 1** — `models.py` : créer la classe
+**Import correct de CHAMPS_SPECIFIQUES :**
 ```python
-@dataclass
-class PlanteNouveau(Plante):
-    TYPE: str = field(default="nouveau", init=False)
-    mon_champ: str = ""
+# ❌  from models import CHAMPS_SPECIFIQUES
+# ✅  from database import CHAMPS_SPECIFIQUES
 ```
 
-**Étape 2** — `models.py` : ajouter dans les constantes
-```python
-TYPE_LABELS   = { ..., "nouveau": "🌺 Nouveau type" }
-TYPE_COULEURS = { ..., "nouveau": "#aa6688" }
-CLASSES_MAP   = { ..., "nouveau": PlanteNouveau }
+**Fermeture onglet :** `window.close()` peut être bloqué par le navigateur. Flask s'arrête bien dans tous les cas, mais l'onglet peut rester ouvert — fermer manuellement si besoin.
+
+**Double ouverture navigateur :** le mode `debug=True` redémarre Flask à chaque modif de code, ce qui peut rouvrir le navigateur. Comportement normal du reloader.
+
+**Serveur de dev :** le `WARNING: This is a development server` est normal pour un usage local.
+
+---
+
+## ➕ Ajouter un nouveau type (ex: PlanteJardin était prévu en mars 2026)
+
+1. `models.py` — créer la classe + ajouter dans `TYPE_LABELS`, `TYPE_COULEURS`, `CLASSES_MAP`
+2. `database.py` — créer la table + ajouter dans `TABLE_SPECIFIQUE` et `CHAMPS_SPECIFIQUES`
+3. `templates/formulaire.html` — ajouter le bloc de champs
+4. `templates/detail.html` — ajouter la vue détail
+5. `templates/base.html` — ajouter l'option dans le dropdown "+ Ajouter"
+
+---
+
+## 🔁 Workflow Git
+
+```bash
+# Modifications courantes
+git add .
+git commit -m "description"
+git push
+
+# Premier push seulement
+git init
+git remote add origin https://github.com/HAMIDISOF/mon-herbier.git
+git push -u origin main --force
 ```
 
-**Étape 3** — `database.py` : créer la table et ajouter dans les mappings
-```python
-# Dans init_db() :
-c.execute("CREATE TABLE IF NOT EXISTS plantes_nouveau (...)")
-# Dans TABLE_SPECIFIQUE et CHAMPS_SPECIFIQUES : ajouter "nouveau"
-```
-
-**Étape 4** — `templates/formulaire.html` : ajouter le bloc de champs
-
-**Étape 5** — `templates/detail.html` : ajouter la vue détail
+> `git remote add` → une seule fois. Si `error: remote origin already exists` → sauter cette ligne.
 
 ---
 
@@ -143,22 +163,24 @@ c.execute("CREATE TABLE IF NOT EXISTS plantes_nouveau (...)")
 - [ ] Impression de fiches
 - [ ] Gestion de la bibliothèque (livres de référence)
 - [ ] Statistiques de consommation
+- [ ] Déduplication à l'import (éviter les doublons)
 
 ---
 
 ## 🎨 Thème visuel
 
-Tons naturels, typographie Cormorant Garamond + DM Sans.
+Typographie : **Cormorant Garamond** (titres) + **DM Sans** (corps). Palette tons naturels.
 
 | Variable CSS | Couleur | Usage |
 |---|---|---|
 | `--bg` | Beige clair | Fond général |
 | `--paper` | Blanc cassé | Cards, formulaires |
-| `--vert` / `--vert2` | Vert foncé | Plantes brutes, actions principales |
+| `--vert` / `--vert2` | Vert foncé | Plantes brutes, actions |
 | `--brun` | Brun | Précautions |
 | `--rouge` | Rouge brique | Contre-indications, suppression |
 | `--bleu` | Bleu-gris | Compléments |
+| `--olive` | Vert olive | Plantes jardin |
 
 ---
 
-*Dernière mise à jour : février 2026 — v3.0 Flask*
+*Dernière mise à jour : février 2026 — v3.1*
