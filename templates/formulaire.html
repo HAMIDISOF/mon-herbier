@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Modifier' if mode == 'modif' else 'Ajouter' }} — Mon Herbier{% endblock %}
+
+{% block extra_css %}
+<style>
+  {% set couleur = type_couleurs.get(plante.TYPE, '#4a7a35') %}
+  .form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .form-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+  }
+  .form-title strong { color: {{ couleur }}; }
+
+  .form-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .form-actions {
+    display: flex;
+    gap: .8rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    margin-top: 1.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+{% set couleur = type_couleurs.get(plante.TYPE, '#4a7a35') %}
+
+<div class="form-header">
+  <h1 class="form-title">
+    {{ 'Modifier' if mode == 'modif' else 'Nouvelle' }}
+    <strong>{{ type_labels.get(plante.TYPE, plante.TYPE) }}</strong>
+  </h1>
+  <a href="{{ '/plante/' + plante.id|string if mode == 'modif' else '/' }}"
+     class="btn btn-ghost">← Annuler</a>
+</div>
+
+<form action="/plante/sauvegarder" method="post">
+  <input type="hidden" name="type_" value="{{ plante.TYPE }}">
+  {% if mode == 'modif' %}
+    <input type="hidden" name="plante_id" value="{{ plante.id }}">
+  {% endif %}
+
+  <!-- Champs communs -->
+  <div class="form-card">
+    <div class="section-title" style="margin-top:0">— Identification</div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Nom commun *</label>
+        <input type="text" name="nom" class="form-control"
+               value="{{ plante.nom }}" required placeholder="Ex: Ortie">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nom scientifique</label>
+        <input type="text" name="latin" class="form-control"
+               value="{{ plante.latin }}" placeholder="Ex: Urtica dioica">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Famille botanique</label>
+        <input type="text" name="famille" class="form-control" value="{{ plante.famille }}">
+      </div>
+      <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:.3rem">
+        <label class="checkbox-label">
+          <input type="checkbox" name="bio" {% if plante.bio %}checked{% endif %}>
+          Agriculture biologique
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Champs spécifiques au type -->
+  <div class="form-card">
+    {% if plante.TYPE == 'brute' %}
+      <div class="section-title" style="margin-top:0">— Préparation</div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Partie utilisée</label>
+          <select name="partie" class="form-control">
+            {% for opt in ['', 'Feuilles', 'Fleurs', 'Racine', 'Écorce', 'Fruit', 'Graine', 'Tige', 'Plante entière'] %}
+              <option value="{{ opt }}" {{ 'selected' if plante.partie == opt }}>{{ opt or '— Choisir —' }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Origine / Pays</label>
+          <input type="text" name="origine" class="form-control" value="{{ plante.origine }}">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Mode de préparation</label>
+          <select name="mode_preparation" class="form-control">
+            {% for opt in ['', 'Infusion', 'Décoction', 'Macérat huileux', 'Macérat glycériné', 'Teinture mère', 'Poudre', 'Autre'] %}
+              <option value="{{ opt }}" {{ 'selected' if plante.mode_preparation == opt }}>{{ opt or '— Choisir —' }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Température</label>
+          <input type="text" name="temperature" class="form-control"
+                 value="{{ plante.temperature }}" placeholder="Ex: 95°C">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Temps d'infusion</label>
+          <input type="text" name="temps_infusion" class="form-control"
+                 value="{{ plante.temps_infusion }}" placeholder="Ex: 5 à 10 min">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Posologie</label>
+          <input type="text" name="posologie" class="form-control"
+                 value="{{ plante.posologie }}" placeholder="Ex: 2 tasses/jour">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Conditionnement</label>
+        <input type="text" name="conditionnement" class="form-control"
+               value="{{ plante.conditionnement }}" placeholder="Ex: Vrac 100g, sachets">
+      </div>
+
+    {% elif plante.TYPE == 'complement' %}
+      <div class="section-title" style="margin-top:0">— Produit</div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Partie utilisée</label>
+          <input type="text" name="partie" class="form-control" value="{{ plante.partie }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Origine</label>
+          <input type="text" name="origine" class="form-control" value="{{ plante.origine }}">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Référence produit</label>
+          <input type="text" name="reference" class="form-control" value="{{ plante.reference }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Forme galénique</label>
+          <select name="forme" class="form-control">
+            {% for opt in ['', 'Gélules', 'Comprimés', 'Ampoules', 'Poudre', 'Liquide', 'Spray', 'Patch', 'Autre'] %}
+              <option value="{{ opt }}" {{ 'selected' if plante.forme == opt }}>{{ opt or '— Choisir —' }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Dosage par unité</label>
+          <input type="text" name="dosage" class="form-control"
+                 value="{{ plante.dosage }}" placeholder="Ex: 405 mg">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Posologie</label>
+          <input type="text" name="posologie" class="form-control"
+                 value="{{ plante.posologie }}" placeholder="Ex: 2 gélules/jour">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Moment de prise</label>
+          <select name="moment_prise" class="form-control">
+            {% for opt in ['', 'Matin à jeun', 'Matin au repas', 'Midi au repas', 'Soir au repas', 'Soir au coucher', 'Matin et soir', 'Aux repas'] %}
+              <option value="{{ opt }}" {{ 'selected' if plante.moment_prise == opt }}>{{ opt or '— Choisir —' }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Durée de cure</label>
+          <input type="text" name="duree_cure" class="form-control"
+                 value="{{ plante.duree_cure }}" placeholder="Ex: 3 mois">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Conditionnement</label>
+        <input type="text" name="conditionnement" class="form-control"
+               value="{{ plante.conditionnement }}" placeholder="Ex: Boîte 90 gélules">
+      </div>
+
+    {% elif plante.TYPE == 'he' %}
+      <div class="section-title" style="margin-top:0">— Huile essentielle</div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Organe distillé</label>
+          <select name="organe" class="form-control">
+            {% for opt in ['', 'Feuilles', 'Fleurs', 'Écorce', 'Racine', 'Fruit', 'Graine', 'Bois', 'Résine', 'Plante entière'] %}
+              <option value="{{ opt }}" {{ 'selected' if plante.organe == opt }}>{{ opt or '— Choisir —' }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Origine / Pays</label>
+          <input type="text" name="origine" class="form-control" value="{{ plante.origine }}">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Mode d'obtention</label>
+          <select name="mode_obtention" class="form-control">
+            {% for opt in ['', 'Distillation à la vapeur d\'eau', 'Expression à froid', 'CO2 supercritique', 'Enfleurage', 'Autre'] %}
+              <option value="{{ opt }}" {{ 'selected' if plante.mode_obtention == opt }}>{{ opt or '— Choisir —' }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chémotype (CT)</label>
+          <input type="text" name="chemotype" class="form-control" value="{{ plante.chemotype }}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Composition</label>
+        <textarea name="composition" class="form-control">{{ plante.composition }}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Voies d'utilisation</label>
+        <textarea name="voies" class="form-control">{{ plante.voies }}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Précautions par voie</label>
+        <textarea name="precautions_voies" class="form-control">{{ plante.precautions_voies }}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date limite (DLC)</label>
+        <input type="text" name="dlc" class="form-control"
+               value="{{ plante.dlc }}" placeholder="Ex: 28/05/2028">
+      </div>
+
+    {% elif plante.TYPE == 'jardin' %}
+      <div class="section-title" style="margin-top:0">— Culture</div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Partie récoltée</label>
+          <input type="text" name="partie" class="form-control" value="{{ plante.partie }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Emplacement</label>
+          <input type="text" name="emplacement" class="form-control" value="{{ plante.emplacement }}">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Exposition</label>
+          <select name="exposition" class="form-control">
+            {% for opt in ['', 'Plein soleil', 'Mi-ombre', 'Ombre', 'Variable'] %}
+              <option value="{{ opt }}" {{ 'selected' if plante.exposition == opt }}>{{ opt or '— Choisir —' }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type de sol</label>
+          <input type="text" name="type_sol" class="form-control" value="{{ plante.type_sol }}">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Période de semis</label>
+          <input type="text" name="periode_semis" class="form-control"
+                 value="{{ plante.periode_semis }}" placeholder="Ex: mars-avril">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Période de récolte</label>
+          <input type="text" name="periode_recolte" class="form-control"
+                 value="{{ plante.periode_recolte }}" placeholder="Ex: juin-septembre">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:.3rem">
+          <label class="checkbox-label">
+            <input type="checkbox" name="vivace" {% if plante.vivace %}checked{% endif %}>
+            Plante vivace
+          </label>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hivernage</label>
+          <input type="text" name="hivernage" class="form-control" value="{{ plante.hivernage }}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Entretien</label>
+        <textarea name="entretien" class="form-control">{{ plante.entretien }}</textarea>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Propriétés & sécurité -->
+  <div class="form-card">
+    <div class="section-title" style="margin-top:0">— Propriétés & Sécurité</div>
+    <div class="form-group">
+      <label class="form-label">Indications / Bénéfices</label>
+      <textarea name="proprietes" class="form-control" rows="3">{{ plante.proprietes }}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contre-indications</label>
+      <textarea name="contre" class="form-control" rows="2">{{ plante.contre }}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Interactions médicamenteuses</label>
+      <textarea name="interactions" class="form-control" rows="2">{{ plante.interactions }}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Précautions générales</label>
+      <textarea name="precautions" class="form-control" rows="2">{{ plante.precautions }}</textarea>
+    </div>
+  </div>
+
+  <!-- Logistique -->
+  <div class="form-card">
+    <div class="section-title" style="margin-top:0">— Logistique</div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Quantité disponible</label>
+        <input type="text" name="quantite" class="form-control"
+               value="{{ plante.quantite }}" placeholder="Ex: 50g, 30 gélules">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Lieu de stockage</label>
+        <input type="text" name="stockage" class="form-control" value="{{ plante.stockage }}">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Distributeur</label>
+        <input type="text" name="distributeur" class="form-control" value="{{ plante.distributeur }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Prix habituel</label>
+        <input type="text" name="prix" class="form-control"
+               value="{{ plante.prix }}" placeholder="Ex: 12,50 €">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Liens ressources (format : Label: https://...)</label>
+      <textarea name="liens" class="form-control" rows="2"
+                placeholder="Doctissimo: https://...&#10;Pubmed: https://...">{{ plante.liens }}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes personnelles</label>
+      <textarea name="notes" class="form-control" rows="3">{{ plante.notes }}</textarea>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <a href="{{ '/plante/' + plante.id|string if mode == 'modif' else '/' }}"
+       class="btn btn-secondary">Annuler</a>
+    <button type="submit" class="btn btn-primary">
+      ✓ {{ 'Enregistrer les modifications' if mode == 'modif' else 'Créer la fiche' }}
+    </button>
+  </div>
+</form>
+{% endblock %}

@@ -141,7 +141,7 @@ def sauvegarder():
     obj.notes        = form.get("notes", "").strip()
 
     # Champs spécifiques
-    from models import CHAMPS_SPECIFIQUES
+    from database import CHAMPS_SPECIFIQUES
     for champ in CHAMPS_SPECIFIQUES.get(type_, []):
         if champ == "vivace":
             setattr(obj, champ, form.get(champ) == "on")
@@ -260,4 +260,6 @@ def api_plantes():
 if __name__ == "__main__":
     init_db()
     print("🌿 Mon Herbier — http://localhost:5000")
+    import threading, webbrowser
+    threading.Timer(1.2, lambda: webbrowser.open("http://localhost:5000")).start()
     app.run(debug=True, port=5000)

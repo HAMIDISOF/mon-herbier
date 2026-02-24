@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Mon Herbier{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── Variables ───────────────────────────────────────────── */
+    :root {
+      --bg:       #f4efe6;
+      --paper:    #fdf9f2;
+      --ink:      #2a2018;
+      --muted:    #7a6d58;
+      --border:   #d4c9b0;
+      --vert:     #4a7a35;
+      --vert2:    #2d5a1e;
+      --vert-pale:#e8f0e3;
+      --brun:     #8b6030;
+      --rouge:    #8b3020;
+      --bleu:     #3a6080;
+      --olive:    #6a8a3a;
+      --shadow:   rgba(42,32,24,.10);
+    }
+
+    /* ── Reset & base ────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(74,122,53,.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(139,96,48,.05) 0%, transparent 60%);
+    }
+
+    /* ── Navigation ──────────────────────────────────────────── */
+    nav {
+      background: var(--vert2);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.2);
+    }
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: .03em;
+      white-space: nowrap;
+    }
+    .nav-brand span { opacity: .7; font-weight: 300; }
+    .nav-links { display: flex; gap: .5rem; align-items: center; flex: 1; }
+    .nav-links a {
+      color: rgba(255,255,255,.8);
+      text-decoration: none;
+      font-size: .85rem;
+      font-weight: 400;
+      padding: .35rem .8rem;
+      border-radius: 20px;
+      transition: all .2s;
+      letter-spacing: .02em;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      background: rgba(255,255,255,.15);
+      color: #fff;
+    }
+
+    /* Dropdown "+ Ajouter" */
+    .nav-add { position: relative; margin-left: auto; }
+    .btn-add {
+      background: var(--vert);
+      color: #fff;
+      border: none;
+      padding: .4rem 1.1rem;
+      border-radius: 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      transition: background .2s;
+    }
+    .btn-add:hover { background: #3d6a2a; }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 8px 24px var(--shadow);
+      min-width: 200px;
+      overflow: hidden;
+    }
+    .nav-add:hover .dropdown-menu,
+    .nav-add:focus-within .dropdown-menu { display: block; }
+    .dropdown-menu a {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .65rem 1rem;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: .9rem;
+      transition: background .15s;
+    }
+    .dropdown-menu a:hover { background: var(--vert-pale); }
+
+    /* Import fiches */
+    .btn-import {
+      background: none;
+      border: 1px solid rgba(255,255,255,.4);
+      color: rgba(255,255,255,.85);
+      padding: .35rem .9rem;
+      border-radius: 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .82rem;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-import:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+    /* ── Contenu principal ───────────────────────────────────── */
+    main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* ── Flashs ──────────────────────────────────────────────── */
+    .flashes { margin-bottom: 1.2rem; }
+    .flash {
+      padding: .7rem 1rem;
+      border-radius: 8px;
+      font-size: .9rem;
+      margin-bottom: .5rem;
+      border-left: 4px solid;
+    }
+    .flash.success { background: var(--vert-pale); border-color: var(--vert); color: var(--vert2); }
+    .flash.error   { background: #fcecea; border-color: var(--rouge); color: var(--rouge); }
+    .flash.info    { background: #e8f0f8; border-color: var(--bleu); color: var(--bleu); }
+    .flash.warning { background: #fdf3e3; border-color: var(--brun); color: var(--brun); }
+
+    /* ── Badges type ─────────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .2rem .6rem;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 500;
+      letter-spacing: .02em;
+    }
+    .badge-brute      { background: #e8f0e3; color: #2d5a1e; }
+    .badge-complement { background: #e3eaf2; color: #2a4a6a; }
+    .badge-he         { background: #f2ece3; color: #6a3a10; }
+    .badge-jardin     { background: #edf2e3; color: #3a5a1a; }
+
+    /* ── Boutons ─────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .5rem 1.1rem;
+      border-radius: 8px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .88rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-primary { background: var(--vert);  color: #fff; }
+    .btn-primary:hover { background: var(--vert2); }
+    .btn-secondary { background: var(--border); color: var(--ink); }
+    .btn-secondary:hover { background: #c4b9a0; }
+    .btn-danger { background: var(--rouge); color: #fff; }
+    .btn-danger:hover { background: #7a2818; }
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-ghost:hover { border-color: var(--vert); color: var(--vert); }
+    .btn-sm { padding: .3rem .7rem; font-size: .8rem; }
+
+    /* ── Cards ───────────────────────────────────────────────── */
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .card:hover {
+      box-shadow: 0 4px 16px var(--shadow);
+      transform: translateY(-1px);
+    }
+
+    /* ── Séparateurs de section ──────────────────────────────── */
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: .8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted);
+      padding: .4rem 0;
+      border-bottom: 1px solid var(--border);
+      margin: 1.2rem 0 .8rem;
+    }
+
+    /* ── Champs de formulaire ────────────────────────────────── */
+    .form-group { margin-bottom: 1rem; }
+    .form-label {
+      display: block;
+      font-size: .82rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: .3rem;
+      letter-spacing: .03em;
+    }
+    .form-control {
+      width: 100%;
+      padding: .55rem .8rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem;
+      color: var(--ink);
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--vert);
+      box-shadow: 0 0 0 3px rgba(74,122,53,.12);
+    }
+    textarea.form-control { resize: vertical; min-height: 80px; }
+    select.form-control { cursor: pointer; }
+
+    /* Checkbox stylisée */
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .9rem;
+      cursor: pointer;
+    }
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--vert); }
+
+    /* ── Grid helpers ────────────────────────────────────────── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    @media (max-width: 640px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: .8rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">🌿 <span>Mon</span> Herbier</a>
+  <div class="nav-links">
+    <a href="/" class="{{ 'active' if request.path == '/' }}">Herbier</a>
+    <a href="/journal" class="{{ 'active' if '/journal' in request.path }}">Journal</a>
+  </div>
+
+  <!-- Import fiches -->
+  <form action="/importer" method="post" style="margin:0">
+    <button class="btn-import" type="submit">📂 Importer fiches</button>
+  </form>
+
+  <!-- Dropdown Ajouter -->
+  <div class="nav-add">
+    <button class="btn-add">+ Ajouter ▾</button>
+    <div class="dropdown-menu">
+      <a href="/plante/nouveau/brute">🌿 Plante brute</a>
+      <a href="/plante/nouveau/complement">💊 Complément</a>
+      <a href="/plante/nouveau/he">💧 Huile essentielle</a>
+      <a href="/plante/nouveau/jardin">🌱 Plante de jardin</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flashes">
+        {% for cat, msg in messages %}
+          <div class="flash {{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer>
+  🌿 Mon Herbier — gestion de plantes médicinales, compléments &amp; huiles essentielles
+</footer>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% block title %}Mon Herbier{% endblock %}
+
+{% block extra_css %}
+<style>
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.8rem;
+    gap: 1rem;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .hero-title strong { font-weight: 600; color: var(--vert2); }
+  .hero-count {
+    font-size: .85rem;
+    color: var(--muted);
+    margin-top: .2rem;
+  }
+
+  /* Barre de recherche + filtres */
+  .toolbar {
+    display: flex;
+    gap: .8rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-wrap input {
+    width: 100%;
+    padding: .55rem 1rem .55rem 2.4rem;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    color: var(--ink);
+    transition: border-color .2s;
+  }
+  .search-wrap input:focus { outline: none; border-color: var(--vert); }
+  .search-icon {
+    position: absolute;
+    left: .8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: .9rem;
+  }
+
+  /* Filtres type */
+  .filters { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .filter-btn {
+    padding: .35rem .9rem;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--paper);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: .82rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .filter-btn:hover { border-color: var(--vert); color: var(--vert); }
+  .filter-btn.active {
+    background: var(--vert);
+    border-color: var(--vert);
+    color: #fff;
+  }
+
+  /* Grille de plantes */
+  .plantes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .plante-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: box-shadow .2s, transform .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .plante-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--accent, var(--vert));
+    transition: width .2s;
+  }
+  .plante-card:hover {
+    box-shadow: 0 6px 20px var(--shadow);
+    transform: translateY(-2px);
+  }
+  .plante-card:hover::before { width: 6px; }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: .5rem;
+  }
+  .card-nom {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .card-latin {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: .88rem;
+    color: var(--muted);
+    margin-bottom: .5rem;
+  }
+  .card-bio {
+    font-size: .75rem;
+    color: var(--vert);
+    font-weight: 500;
+  }
+  .card-proprietes {
+    font-size: .83rem;
+    color: var(--muted);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: .4rem;
+  }
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: .7rem;
+    font-size: .78rem;
+    color: var(--muted);
+  }
+
+  /* Vide */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: .5; }
+  .empty-state h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+    margin-bottom: .5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <div>
+    <h1 class="hero-title">Mon <strong>Herbier</strong></h1>
+    <p class="hero-count">{{ plantes|length }} entrée{{ 's' if plantes|length != 1 }}</p>
+  </div>
+</div>
+
+<!-- Barre de recherche + filtres -->
+<form method="get" action="/">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" name="q" value="{{ recherche }}"
+             placeholder="Rechercher une plante, une propriété...">
+    </div>
+    <div class="filters">
+      <a href="/?q={{ recherche }}"
+         class="filter-btn {{ 'active' if not type_filtre }}">Tous</a>
+      {% for type_id, label in type_labels.items() %}
+        <a href="/?type={{ type_id }}&q={{ recherche }}"
+           class="filter-btn {{ 'active' if type_filtre == type_id }}">{{ label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</form>
+
+<!-- Grille -->
+{% if plantes %}
+  <div class="plantes-grid">
+    {% for p in plantes %}
+      {% set couleur = type_couleurs.get(p.TYPE, '#4a7a35') %}
+      <a class="plante-card" href="/plante/{{ p.id }}"
+         style="--accent: {{ couleur }}">
+        <div class="card-header">
+          <span class="card-nom">{{ p.nom }}</span>
+          <span class="badge badge-{{ p.TYPE }}">
+            {{ type_labels.get(p.TYPE, p.TYPE) }}
+          </span>
+        </div>
+        {% if p.latin %}
+          <div class="card-latin">{{ p.latin }}</div>
+        {% endif %}
+        {% if p.bio %}
+          <span class="card-bio">✓ Bio</span>
+        {% endif %}
+        {% if p.proprietes %}
+          <div class="card-proprietes">{{ p.proprietes }}</div>
+        {% endif %}
+        <div class="card-footer">
+          {% if p.quantite %}<span>📦 {{ p.quantite }}</span>{% endif %}
+          {% if p.distributeur %}<span>{{ p.distributeur }}</span>{% endif %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-icon">🌿</div>
+    <h3>Aucune entrée pour l'instant</h3>
+    <p>Ajoute ta première plante, huile essentielle ou complément via le menu "+ Ajouter",
+       ou dépose des fiches .docx dans le dossier <code>fiches/</code> et clique sur "Importer fiches".</p>
+  </div>
+{% endif %}
+{% endblock %}

@@ -25,7 +25,8 @@ Usage :
 import os
 import re
 from docx import Document
-from models import creer_plante, Plante, CHAMPS_SPECIFIQUES
+from models import creer_plante, Plante
+from database import CHAMPS_SPECIFIQUES
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MAPPING LABELS → ATTRIBUTS

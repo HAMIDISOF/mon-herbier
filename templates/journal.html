@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Journal de cure — Mon Herbier{% endblock %}
+
+{% block extra_css %}
+<style>
+  .journal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .journal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 400;
+  }
+  .journal-subtitle {
+    font-size: .88rem;
+    color: var(--muted);
+    margin-top: .2rem;
+  }
+
+  .journal-list { margin-top: 1rem; }
+  .journal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: .9rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .journal-row:last-child { border-bottom: none; }
+
+  .journal-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--vert);
+    flex-shrink: 0;
+    margin-top: .4rem;
+  }
+  .journal-body { flex: 1; }
+  .journal-top {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    flex-wrap: wrap;
+    margin-bottom: .2rem;
+  }
+  .journal-date { font-size: .82rem; color: var(--muted); }
+  .journal-action { font-weight: 500; font-size: .95rem; }
+  .journal-plante {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--vert2);
+  }
+  .journal-notes-text { font-size: .88rem; color: var(--muted); line-height: 1.5; }
+
+  .empty-journal {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+  }
+  .empty-journal p { font-size: .9rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="journal-header">
+  <div>
+    <h1 class="journal-title">
+      📓 Journal
+      {% if plante %}<span style="color:var(--vert2)"> — {{ plante.nom }}</span>{% endif %}
+    </h1>
+    <p class="journal-subtitle">
+      {% if plante %}
+        Historique des cures et observations pour cette fiche.
+        <a href="/journal" style="color:var(--vert)">Voir le journal global →</a>
+      {% else %}
+        Toutes les entrées, toutes plantes confondues.
+      {% endif %}
+    </p>
+  </div>
+  {% if plante %}
+    <a href="/plante/{{ plante.id }}" class="btn btn-ghost">← Retour à la fiche</a>
+  {% endif %}
+</div>
+
+{% if entrees %}
+  <div class="card">
+    <div class="journal-list">
+      {% for e in entrees %}
+        <div class="journal-row">
+          <div class="journal-dot"
+               style="background:{{ type_couleurs.get(e.get('type', ''), '#4a7a35') if e is mapping else '#4a7a35' }}">
+          </div>
+          <div class="journal-body">
+            <div class="journal-top">
+              <span class="journal-date">{{ e.date if e is not mapping else e['date'] }}</span>
+              <span class="journal-action">
+                {{ e.action if e is not mapping else e['action'] }}
+              </span>
+              {% if e is mapping and e.get('nom') %}
+                <span class="journal-plante">{{ e['nom'] }}</span>
+                <span class="badge badge-{{ e.get('type','') }}">
+                  {{ type_labels.get(e.get('type',''), '') }}
+                </span>
+              {% endif %}
+            </div>
+            {% set notes_val = e.notes if e is not mapping else e.get('notes','') %}
+            {% if notes_val %}
+              <div class="journal-notes-text">{{ notes_val }}</div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% else %}
+  <div class="empty-journal">
+    <p style="font-size:2rem;margin-bottom:.5rem">📓</p>
+    <p>Aucune entrée dans le journal pour l'instant.</p>
+    {% if not plante %}
+      <p style="margin-top:.5rem">Ouvre une fiche et ajoute une entrée pour commencer.</p>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

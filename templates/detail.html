@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+{% block title %}{{ plante.nom }} — Mon Herbier{% endblock %}
+
+{% block extra_css %}
+<style>
+  {% set couleur = type_couleurs.get(plante.TYPE, '#4a7a35') %}
+
+  .detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .detail-header-left { flex: 1; }
+  .detail-nom {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .detail-latin {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-top: .2rem;
+  }
+  .detail-meta {
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    margin-top: .6rem;
+    flex-wrap: wrap;
+  }
+  .detail-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+
+  /* Grille de blocs d'info */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: .8rem;
+    margin: 1rem 0;
+  }
+  .info-bloc {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .8rem 1rem;
+  }
+  .info-bloc-label {
+    font-size: .72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: {{ couleur }};
+    margin-bottom: .3rem;
+  }
+  .info-bloc-val {
+    font-size: .95rem;
+    color: var(--ink);
+    line-height: 1.4;
+    white-space: pre-wrap;
+  }
+
+  /* Blocs larges (propriétés, notes...) */
+  .info-full {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-left: 4px solid {{ couleur }};
+    border-radius: 0 10px 10px 0;
+    padding: .9rem 1.1rem;
+    margin: .6rem 0;
+  }
+  .info-full-label {
+    font-size: .72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: {{ couleur }};
+    margin-bottom: .4rem;
+  }
+  .info-full-val {
+    font-size: .95rem;
+    color: var(--ink);
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  /* Alerte contre-indications */
+  .info-danger {
+    background: #fcecea;
+    border-left-color: var(--rouge);
+  }
+  .info-danger .info-full-label { color: var(--rouge); }
+
+  /* Alerte précautions */
+  .info-warning {
+    background: #fdf3e3;
+    border-left-color: var(--brun);
+  }
+  .info-warning .info-full-label { color: var(--brun); }
+
+  /* Liens ressources */
+  .liens-list { display: flex; flex-direction: column; gap: .3rem; margin-top: .4rem; }
+  .lien-item {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .88rem;
+  }
+  .lien-item a { color: var(--bleu); text-decoration: none; }
+  .lien-item a:hover { text-decoration: underline; }
+
+  /* Journal mini */
+  .journal-mini { margin-top: 1.5rem; }
+  .journal-entry {
+    display: flex;
+    gap: .8rem;
+    padding: .6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: .88rem;
+  }
+  .journal-entry:last-child { border-bottom: none; }
+  .journal-date { color: var(--muted); white-space: nowrap; min-width: 90px; }
+  .journal-action { font-weight: 500; color: var(--ink); }
+  .journal-notes { color: var(--muted); }
+
+  /* Formulaire ajout journal */
+  .journal-form {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+
+  /* Confirm delete */
+  .confirm-delete { display: none; }
+  .confirm-delete.show { display: inline; }
+  .btn-delete-toggle { background: none; border: none; cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% set couleur = type_couleurs.get(plante.TYPE, '#4a7a35') %}
+
+<!-- En-tête -->
+<div class="detail-header">
+  <div class="detail-header-left">
+    <div class="detail-nom">{{ plante.nom }}</div>
+    {% if plante.latin %}
+      <div class="detail-latin">{{ plante.latin }}</div>
+    {% endif %}
+    <div class="detail-meta">
+      <span class="badge badge-{{ plante.TYPE }}">
+        {{ type_labels.get(plante.TYPE, plante.TYPE) }}
+      </span>
+      {% if plante.famille %}
+        <span style="font-size:.82rem;color:var(--muted)">{{ plante.famille }}</span>
+      {% endif %}
+      {% if plante.bio %}
+        <span class="badge" style="background:var(--vert-pale);color:var(--vert2)">✓ Bio</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="detail-actions">
+    <a href="/plante/{{ plante.id }}/modifier" class="btn btn-secondary">✏ Modifier</a>
+    <a href="/" class="btn btn-ghost">← Retour</a>
+  </div>
+</div>
+
+<!-- Infos spécifiques au type -->
+{% if plante.TYPE == 'brute' %}
+  <div class="section-title">— Préparation</div>
+  <div class="info-grid">
+    {% if plante.partie %}
+      <div class="info-bloc">
+        <div class="info-bloc-label">Partie utilisée</div>
+        <div class="info-bloc-val">{{ plante.partie }}</div>
+      </div>
+    {% endif %}
+    {% if plante.origine %}
+      <div class="info-bloc">
+        <div class="info-bloc-label">Origine</div>
+        <div class="info-bloc-val">{{ plante.origine }}</div>
+      </div>
+    {% endif %}
+    {% if plante.mode_preparation %}
+      <div class="info-bloc">
+        <div class="info-bloc-label">Mode de préparation</div>
+        <div class="info-bloc-val">{{ plante.mode_preparation }}</div>
+      </div>
+    {% endif %}
+    {% if plante.temperature %}
+      <div class="info-bloc">
+        <div class="info-bloc-label">Température</div>
+        <div class="info-bloc-val">{{ plante.temperature }}</div>
+      </div>
+    {% endif %}
+    {% if plante.temps_infusion %}
+      <div class="info-bloc">
+        <div class="info-bloc-label">Temps d'infusion</div>
+        <div class="info-bloc-val">{{ plante.temps_infusion }}</div>
+      </div>
+    {% endif %}
+    {% if plante.posologie %}
+      <div class="info-bloc">
+        <div class="info-bloc-label">Posologie</div>
+        <div class="info-bloc-val">{{ plante.posologie }}</div>
+      </div>
+    {% endif %}
+    {% if plante.conditionnement %}
+      <div class="info-bloc">
+        <div class="info-bloc-label">Conditionnement</div>
+        <div class="info-bloc-val">{{ plante.conditionnement }}</div>
+      </div>
+    {% endif %}
+  </div>
+
+{% elif plante.TYPE == 'complement' %}
+  <div class="section-title">— Produit</div>
+  <div class="info-grid">
+    {% for label, val in [
+        ('Référence', plante.reference), ('Partie', plante.partie),
+        ('Origine', plante.origine), ('Forme', plante.forme),
+        ('Dosage', plante.dosage), ('Posologie', plante.posologie),
+        ('Moment de prise', plante.moment_prise), ('Durée de cure', plante.duree_cure),
+        ('Conditionnement', plante.conditionnement)] %}
+      {% if val %}
+        <div class="info-bloc">
+          <div class="info-bloc-label">{{ label }}</div>
+          <div class="info-bloc-val">{{ val }}</div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+{% elif plante.TYPE == 'he' %}
+  <div class="section-title">— Huile essentielle</div>
+  <div class="info-grid">
+    {% for label, val in [
+        ('Organe distillé', plante.organe), ('Origine', plante.origine),
+        ('Mode d\'obtention', plante.mode_obtention), ('Chémotype', plante.chemotype),
+        ('DLC', plante.dlc)] %}
+      {% if val %}
+        <div class="info-bloc">
+          <div class="info-bloc-label">{{ label }}</div>
+          <div class="info-bloc-val">{{ val }}</div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% if plante.composition %}
+    <div class="info-full">
+      <div class="info-full-label">Composition</div>
+      <div class="info-full-val">{{ plante.composition }}</div>
+    </div>
+  {% endif %}
+  {% if plante.voies %}
+    <div class="info-full">
+      <div class="info-full-label">Voies d'utilisation</div>
+      <div class="info-full-val">{{ plante.voies }}</div>
+    </div>
+  {% endif %}
+  {% if plante.precautions_voies %}
+    <div class="info-full info-warning">
+      <div class="info-full-label">⚠ Précautions par voie</div>
+      <div class="info-full-val">{{ plante.precautions_voies }}</div>
+    </div>
+  {% endif %}
+
+{% elif plante.TYPE == 'jardin' %}
+  <div class="section-title">— Culture</div>
+  <div class="info-grid">
+    {% for label, val in [
+        ('Partie récoltée', plante.partie), ('Emplacement', plante.emplacement),
+        ('Exposition', plante.exposition), ('Type de sol', plante.type_sol),
+        ('Période de semis', plante.periode_semis), ('Période de récolte', plante.periode_recolte),
+        ('Vivace', '✓ Oui' if plante.vivace else ''), ('Hivernage', plante.hivernage)] %}
+      {% if val %}
+        <div class="info-bloc">
+          <div class="info-bloc-label">{{ label }}</div>
+          <div class="info-bloc-val">{{ val }}</div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% if plante.entretien %}
+    <div class="info-full">
+      <div class="info-full-label">Entretien</div>
+      <div class="info-full-val">{{ plante.entretien }}</div>
+    </div>
+  {% endif %}
+{% endif %}
+
+<!-- Propriétés médicinales -->
+{% if plante.proprietes or plante.contre or plante.interactions or plante.precautions %}
+  <div class="section-title">— Propriétés & Sécurité</div>
+  {% if plante.proprietes %}
+    <div class="info-full">
+      <div class="info-full-label">Indications / Bénéfices</div>
+      <div class="info-full-val">{{ plante.proprietes }}</div>
+    </div>
+  {% endif %}
+  {% if plante.contre %}
+    <div class="info-full info-danger">
+      <div class="info-full-label">⚠ Contre-indications</div>
+      <div class="info-full-val">{{ plante.contre }}</div>
+    </div>
+  {% endif %}
+  {% if plante.interactions %}
+    <div class="info-full info-danger">
+      <div class="info-full-label">💊 Interactions médicamenteuses</div>
+      <div class="info-full-val">{{ plante.interactions }}</div>
+    </div>
+  {% endif %}
+  {% if plante.precautions %}
+    <div class="info-full info-warning">
+      <div class="info-full-label">Précautions</div>
+      <div class="info-full-val">{{ plante.precautions }}</div>
+    </div>
+  {% endif %}
+{% endif %}
+
+<!-- Logistique -->
+{% if plante.quantite or plante.stockage or plante.distributeur or plante.prix %}
+  <div class="section-title">— Logistique</div>
+  <div class="info-grid">
+    {% for label, val in [('Quantité', plante.quantite), ('Stockage', plante.stockage),
+                           ('Distributeur', plante.distributeur), ('Prix', plante.prix)] %}
+      {% if val %}
+        <div class="info-bloc">
+          <div class="info-bloc-label">{{ label }}</div>
+          <div class="info-bloc-val">{{ val }}</div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- Liens ressources -->
+{% if plante.liens %}
+  <div class="section-title">— Ressources</div>
+  <div class="info-full">
+    <div class="info-full-label">Liens</div>
+    <div class="liens-list">
+      {% for ligne in plante.liens.split('\n') %}
+        {% if ':' in ligne and ('http' in ligne) %}
+          {% set parts = ligne.split(':', 1) %}
+          <div class="lien-item">
+            🔗 <a href="{{ parts[1].strip() }}" target="_blank" rel="noopener">{{ parts[0].strip() }}</a>
+          </div>
+        {% elif ligne.strip().startswith('http') %}
+          <div class="lien-item">🔗 <a href="{{ ligne.strip() }}" target="_blank">{{ ligne.strip() }}</a></div>
+        {% elif ligne.strip() %}
+          <div class="lien-item">{{ ligne }}</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<!-- Notes -->
+{% if plante.notes %}
+  <div class="section-title">— Notes</div>
+  <div class="info-full" style="border-left-color:var(--muted)">
+    <div class="info-full-label" style="color:var(--muted)">Notes personnelles</div>
+    <div class="info-full-val" style="color:var(--muted)">{{ plante.notes }}</div>
+  </div>
+{% endif %}
+
+<!-- Journal de cure -->
+<div class="section-title journal-mini">— Journal de cure</div>
+
+{% if journal %}
+  <div style="margin-bottom:1rem">
+    {% for e in journal %}
+      <div class="journal-entry">
+        <span class="journal-date">{{ e.date }}</span>
+        <span class="journal-action">{{ e.action }}</span>
+        {% if e.notes %}
+          <span class="journal-notes">— {{ e.notes }}</span>
+        {% endif %}
+        <form action="/journal/{{ e.id }}/supprimer" method="post" style="margin-left:auto">
+          <input type="hidden" name="plante_id" value="{{ plante.id }}">
+          <button type="submit" class="btn btn-ghost btn-sm"
+                  onclick="return confirm('Supprimer cette entrée ?')">✕</button>
+        </form>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p style="color:var(--muted);font-size:.88rem;margin-bottom:.8rem">Aucune entrée pour l'instant.</p>
+{% endif %}
+
+<!-- Formulaire ajout journal -->
+<div class="journal-form">
+  <div style="font-size:.82rem;font-weight:500;color:var(--muted);margin-bottom:.7rem">Ajouter une entrée</div>
+  <form action="/journal/ajouter" method="post">
+    <input type="hidden" name="plante_id" value="{{ plante.id }}">
+    <div class="grid-3" style="margin-bottom:.7rem">
+      <div class="form-group" style="margin:0">
+        <label class="form-label">Date</label>
+        <input type="date" name="date" class="form-control" value="{{ today }}">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">Action</label>
+        <select name="action" class="form-control">
+          <option value="début cure">Début de cure</option>
+          <option value="fin cure">Fin de cure</option>
+          <option value="observation">Observation</option>
+          <option value="achat">Achat</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">Notes</label>
+        <input type="text" name="notes" class="form-control" placeholder="Optionnel...">
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">+ Ajouter</button>
+  </form>
+</div>
+
+<!-- Suppression -->
+<div style="margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;gap:.6rem;align-items:center">
+  <form action="/plante/{{ plante.id }}/supprimer" method="post"
+        onsubmit="return confirm('Supprimer définitivement {{ plante.nom }} ? Cette action est irréversible.')">
+    <button type="submit" class="btn btn-danger btn-sm">🗑 Supprimer</button>
+  </form>
+  <span style="font-size:.78rem;color:var(--muted)">Suppression définitive avec tout l'historique</span>
+</div>
+{% endblock %}
