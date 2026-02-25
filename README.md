@@ -1,4 +1,4 @@
-# 🌿 Mon Herbier — v4.0
+# 🌿 Mon Herbier — v4.1
 
 Application de gestion de plantes médicinales, compléments alimentaires et huiles essentielles.
 **Stack** : Python · Flask · SQLite · HTML/JS
@@ -16,14 +16,15 @@ Herbier_app/
 ├── migrate.py          ← Migration depuis l'ancien herbier_data.json
 ├── requirements.txt    ← Dépendances Python
 ├── herbier.db          ← Base SQLite (créée au 1er lancement, non versionnée)
-├── fiches/             ← Dossier de dépôt des fiches .docx à importer
+├── fiches/             ← Fiches .docx importées + modèles
+│   ├── A_traiter/                  ← 📥 Dépôt des nouvelles fiches à importer
 │   ├── MODELE_FICHE.txt            ← Format texte de référence
 │   ├── MODELE_complement.docx      ← Modèle Word — Complément alimentaire
 │   ├── MODELE_plante_brute.docx    ← Modèle Word — Plante brute
 │   ├── MODELE_huile_essentielle.docx ← Modèle Word — Huile essentielle
 │   └── MODELE_plante_jardin.docx   ← Modèle Word — Plante de jardin
 └── templates/
-    ├── base.html       ← Navigation, thème, responsive mobile, bouton Quitter
+    ├── base.html       ← Navigation, thème, responsive mobile, bouton Quitter (fixe bas-droite)
     ├── index.html      ← Liste + recherche + filtres
     ├── detail.html     ← Fiche détail + journal de cure
     ├── formulaire.html ← Ajout / modification
@@ -85,7 +86,7 @@ Le script :
 1. Ouvre un des 4 modèles Word dans `fiches/`
 2. **Sauvegarde-le immédiatement sous un nouveau nom** (ex: `Ortie.docx`) pour garder le modèle vierge
 3. Remplis les champs après les `:` — le champ `Type:` en rouge ne doit pas être modifié
-4. Sauvegarde en `.docx` dans `Herbier_app/fiches/`
+4. Sauvegarde en `.docx` dans `Herbier_app/fiches/A_traiter/`
 5. Dans l'app → clique sur **"📂 Importer"**
 
 ### Format minimal accepté
@@ -94,6 +95,8 @@ Le script :
 Nom commun: Ortie
 Type: plante brute
 ```
+
+> 💡 **Flux automatique** : après import réussi, la fiche est déplacée de `A_traiter/` vers `fiches/`. En cas d'erreur, elle reste dans `A_traiter/` pour correction.
 
 Les labels sont insensibles à la casse. Les champs inconnus sont ignorés.
 Les champs multilignes se terminent quand un nouveau label est reconnu.
@@ -227,6 +230,7 @@ Typographie : **Cormorant Garamond** (titres) + **DM Sans** (corps). Palette ton
 - [ ] Gestion de la bibliothèque (livres de référence)
 - [ ] Statistiques de consommation
 - [ ] Déduplication à l'import (éviter les doublons)
+- [x] Dossier `A_traiter/` — flux import avec archivage automatique après succès
 - [ ] Mode hors-ligne (PWA) pour usage mobile sans WiFi
 
 ---
@@ -240,7 +244,8 @@ Typographie : **Cormorant Garamond** (titres) + **DM Sans** (corps). Palette ton
 | v3.0 | Migration Flask + SQLite — architecture modulaire (models / database / extract / app) |
 | v3.1 | Correction imports CHAMPS_SPECIFIQUES — ouverture auto navigateur — bouton Quitter |
 | v4.0 | Responsive mobile — accès WiFi — 4 modèles Word — README complet |
+| v4.1 | Bouton Quitter fixe bas-droite — import via `fiches/A_traiter/` avec archivage auto |
 
 ---
 
-*Dernière mise à jour : février 2026 — v4.0*
+*Dernière mise à jour : février 2026 — v4.1*
