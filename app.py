@@ -271,7 +271,7 @@ if __name__ == "__main__":
     # Depuis ton téléphone : http://<IP_DE_TON_PC>:5000
     # Pour trouver ton IP : ipconfig (Windows) → "Adresse IPv4"
     try:
-        app.run(debug=True, host="0.0.0.0", port=5000)
+        app.run(debug=True, use_reloader=False, host="0.0.0.0", port=5000)
     except KeyboardInterrupt:
         print("\n🌿 Au revoir !")
 
@@ -281,14 +281,18 @@ if __name__ == "__main__":
 
 @app.route("/quitter", methods=["POST"])
 def quitter():
+    """Arrête Flask proprement et redirige vers la page d'au revoir (GET)."""
     import threading, os, signal, time
-
     def _arreter():
-        time.sleep(1)
-        os.kill(os.getpid(), signal.SIGTERM)
-
+        time.sleep(1.5)
+        os.kill(os.getpid(), signal.SIGINT)
     threading.Thread(target=_arreter, daemon=True).start()
+    return redirect(url_for("au_revoir"))
 
+
+@app.route("/au-revoir")
+def au_revoir():
+    """Page GET d'au revoir — évite le re-POST si l'utilisateur appuie sur Retour."""
     return """<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -308,6 +312,6 @@ def quitter():
     <h1>🌿 À bientôt !</h1>
     <p>Mon Herbier s'est arrêté. Cette fenêtre va se fermer…</p>
   </div>
-  <script>setTimeout(() => window.close(), 1200);</script>
+  <script>setTimeout(() => window.close(), 1500);</script>
 </body>
 </html>"""
