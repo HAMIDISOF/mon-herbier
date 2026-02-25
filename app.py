@@ -217,25 +217,29 @@ def journal_supprimer(entree_id):
 @app.route("/importer", methods=["POST"])
 def importer():
     """
-    Scanne le dossier fiches/ et importe toutes les nouvelles fiches .docx.
-    Les fiches déjà importées ne sont pas dédupliquées automatiquement
-    (à améliorer avec un suivi des fichiers traités).
+    Scanne fiches/A_traiter/ et importe toutes les fiches .docx.
+    Les fiches importées avec succès sont déplacées dans fiches/.
+    Les fiches en erreur restent dans A_traiter/ pour correction.
     """
+    import shutil
     plantes_extraites, erreurs = importer_dossier(DOSSIER_FICHES)
     nb_ok = 0
-    for p in plantes_extraites:
+    for plante, chemin_source in plantes_extraites:
         try:
-            sauvegarder_plante(p)
+            sauvegarder_plante(plante)
+            # Déplacement vers fiches/ après succès
+            dest = os.path.join(DOSSIER_FICHES, os.path.basename(chemin_source))
+            shutil.move(chemin_source, dest)
             nb_ok += 1
         except Exception as e:
-            erreurs.append(f"{p.nom} ({e})")
+            erreurs.append(f"{plante.nom} ({e})")
 
     if nb_ok:
         flash(f"✅ {nb_ok} fiche(s) importée(s) avec succès.", "success")
     if erreurs:
         flash(f"⚠️ {len(erreurs)} erreur(s) : {', '.join(erreurs)}", "warning")
     if not nb_ok and not erreurs:
-        flash("ℹ️ Aucune fiche .docx trouvée dans le dossier fiches/.", "info")
+        flash("ℹ️ Aucune fiche .docx trouvée dans fiches/A_traiter/.", "info")
 
     return redirect(url_for("index"))
 

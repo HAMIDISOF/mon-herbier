@@ -261,40 +261,37 @@ def extraire_fiche(fichier_path: str) -> Plante | None:
 # IMPORT EN LOT
 # ══════════════════════════════════════════════════════════════════════════════
 
-def importer_dossier(dossier: str) -> tuple[list[Plante], list[str]]:
+def importer_dossier(dossier: str) -> tuple[list[tuple[Plante, str]], list[str]]:
     """
-    Parcourt un dossier et extrait toutes les fiches .docx.
+    Parcourt le sous-dossier A_traiter/ et extrait toutes les fiches .docx.
+    Les fiches extraites avec succès sont déplacées dans le dossier parent (dossier).
+    Les fiches en erreur restent dans A_traiter/ pour correction.
 
     Retourne :
-      - liste des objets Plante extraits avec succès
+      - liste de tuples (objet Plante, chemin source) pour les succès
       - liste des noms de fichiers en erreur
-
-    Usage dans app.py :
-      from extract_fiches import importer_dossier
-      from database import sauvegarder_plante
-      plantes, erreurs = importer_dossier("fiches")
-      for p in plantes:
-          sauvegarder_plante(p)
     """
-    if not os.path.isdir(dossier):
-        print(f"❌ Dossier introuvable : {dossier}")
-        return [], [dossier]
+    dossier_a_traiter = os.path.join(dossier, "A_traiter")
+
+    if not os.path.isdir(dossier_a_traiter):
+        print(f"❌ Dossier introuvable : {dossier_a_traiter}")
+        return [], [dossier_a_traiter]
 
     succes = []
     erreurs = []
 
-    fichiers = [f for f in os.listdir(dossier) if f.lower().endswith(".docx")
-                and not f.startswith("~")]  # ignore les fichiers Word ouverts
+    fichiers = [f for f in os.listdir(dossier_a_traiter)
+                if f.lower().endswith(".docx") and not f.startswith("~")]
 
     if not fichiers:
-        print(f"ℹ️  Aucun fichier .docx trouvé dans {dossier}")
+        print(f"ℹ️  Aucun fichier .docx trouvé dans {dossier_a_traiter}")
         return [], []
 
     for fichier in sorted(fichiers):
-        chemin = os.path.join(dossier, fichier)
+        chemin = os.path.join(dossier_a_traiter, fichier)
         plante = extraire_fiche(chemin)
         if plante:
-            succes.append(plante)
+            succes.append((plante, chemin))
         else:
             erreurs.append(fichier)
 
