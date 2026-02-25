@@ -263,11 +263,8 @@ if __name__ == "__main__":
     print("   Ctrl+C pour quitter")
     import threading, webbrowser
     threading.Timer(1.2, lambda: webbrowser.open("http://localhost:5000")).start()
-    # host="0.0.0.0" → accessible depuis le réseau local WiFi
-    # Depuis ton téléphone : http://<IP_DE_TON_PC>:5000
-    # Pour trouver ton IP : ipconfig (Windows) → "Adresse IPv4"
     try:
-        app.run(debug=True, host="0.0.0.0", port=5000)
+        app.run(debug=True, port=5000)
     except KeyboardInterrupt:
         print("\n🌿 Au revoir !")
 
